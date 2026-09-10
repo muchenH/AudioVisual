@@ -81,7 +81,6 @@ typings/
 /userData
 # Build output
 /dist
-package-lock.json
 
 # Development configuration
 dev-app-update.yml

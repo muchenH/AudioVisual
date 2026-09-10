@@ -6,9 +6,9 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.9-blue.svg?style=for-the-badge&logo=semantic-release)
+![Version](https://img.shields.io/badge/version-1.1.0-blue.svg?style=for-the-badge&logo=semantic-release)
 ![License](https://img.shields.io/badge/license-UNLICENSED-red.svg?style=for-the-badge)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg?style=for-the-badge)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey.svg?style=for-the-badge)
 ![Electron](https://img.shields.io/badge/Electron-33+-47848F.svg?style=for-the-badge&logo=electron)
 
 **🔑 解锁所有媒体流的钥匙**
@@ -32,7 +32,7 @@
 - 🔧 **多解析接口** - 内置多个高质量解析接口，确保解析成功率
 - 🎨 **现代化界面** - 简洁美观的用户界面，支持主题切换
 - 🚀 **自动更新** - 内置自动更新功能，始终保持最新版本
-- 💻 **跨平台** - 基于Electron开发，支持Windows、macOS、Linux
+- 💻 **跨平台** - 基于Electron开发，支持Windows、Linux
 - 🛡️ **安全可靠** - 本地运行，保护用户隐私
 
 ---
@@ -43,14 +43,14 @@
 
 - **Node.js** >= 16.0.0
 - **npm** >= 8.0.0
-- **操作系统**: Windows 10+, macOS 10.14+, Ubuntu 18.04+
+- **操作系统**: Windows 10+, Ubuntu 18.04+
 
 
 ### 📦 安装步骤
 
 1. **克隆项目**
    ```bash
-   git clone https://github.com/RemotePinee/AudioVisual.git
+   git clone https://github.com/muchenH/AudioVisual.git
    ```
 
 2. **进入目录**
@@ -140,7 +140,14 @@ npm run dist
 
 ## 📝 更新日志
 
-### v1.0.9 (最新)
+### v1.1.0 (最新)
+- 🏗️ **构建管线重构**：GitHub Actions 矩阵改为 `windows-latest` + `ubuntu-latest`，移除已停止维护的 macOS 构建
+- 📦 **产物规格调整**：Windows 输出 `nsis` 安装包 + `zip` 免安装包；Linux 输出 `deb` 安装包 + `AppImage` 免安装包
+- 🔧 **依赖安装改为 `npm ci`**：锁定依赖版本，构建结果可复现（`package-lock.json` 纳入版本管理）
+- 🔄 **更新通道切换**：`publish.owner` 指向 `muchenH`，自动更新与 Release 下载地址保持一致
+- 🧾 **发布说明自动生成**：Release 由工作流自动创建并附带全平台产物
+
+### v1.0.9
 - ✨ **Premium 视觉重构**：引入全新自定义 Tooltip 与毛玻璃质感 Modal，彻底告别原生 UI
 - 🚀 **核心稳定性修复**：解决 `MutationObserver` 死循环导致的启动卡死（重要）
 - 📐 **侧边栏布局优化**：引入宽度补偿机制，完美适配各种缩放比例

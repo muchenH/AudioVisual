@@ -16,7 +16,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: win
         
     steps:
     - name: Checkout code
@@ -25,48 +29,46 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
-        
-    - name: Clean npm cache
-      run: npm cache clean --force
-      
-    - name: Remove lock files
-      run: |
-        rm -f package-lock.json npm-shrinkwrap.json
-      shell: bash
+        node-version: '22' # 建议改为 22 或 20
+        cache: 'npm'
         
     - name: Install dependencies
-      run: npm install
+      run: npm ci
+      # 注意：如果仓库里没有 package-lock.json，这里请改成 npm install
       
     - name: Install Linux dependencies
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.target == 'linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y ruby ruby-dev rubygems build-essential
         sudo gem install --no-document fpm
       
-    - name: Build for macOS
-      if: matrix.os == 'macos-latest'
-      run: npm run dist:mac -- --publish=never
-      
     - name: Build for Linux
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.target == 'linux'
       run: npm run dist:linux -- --publish=never
       
-    - name: Upload macOS artifacts
-      if: matrix.os == 'macos-latest' && success()
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos-build
-        path: dist/*.dmg
-        if-no-files-found: warn
-        
+    - name: Build for Windows
+      if: matrix.target == 'win'
+      run: npm run dist:win -- --publish=never
+      
     - name: Upload Linux artifacts
-      if: matrix.os == 'ubuntu-latest' && success()
+      if: matrix.target == 'linux' && success()
       uses: actions/upload-artifact@v4
       with:
         name: linux-build
-        path: dist/*.deb
+        path: |
+          dist/*.deb
+          dist/*.AppImage
+        if-no-files-found: warn
+
+    - name: Upload Windows artifacts
+      if: matrix.target == 'win' && success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: |
+          dist/*.exe
+          dist/*.zip
         if-no-files-found: warn
 
   release:
@@ -82,11 +84,11 @@ jobs:
       uses: actions/download-artifact@v4
       
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
-          macos-build/*
           linux-build/*
+          windows-build/*
         generate_release_notes: true
         draft: false
         prerelease: false

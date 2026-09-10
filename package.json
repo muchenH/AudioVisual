@@ -1,15 +1,14 @@
 {
   "name": "audiovisual",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "The key to unlock all streams.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
-    "dist:mac": "electron-builder --mac",
     "dist:linux": "electron-builder --linux",
-    "dist:all": "electron-builder --win --mac --linux"
+    "dist:all": "electron-builder --win --linux"
   },
   "author": {
     "name": "AudioVisual",
@@ -29,7 +28,7 @@
     "appId": "com.void.player",
     "publish": {
       "provider": "github",
-      "owner": "RemotePinee",
+      "owner": "muchenH",
       "repo": "AudioVisual"
     },
     "productName": "AudioVisual",
@@ -39,42 +38,20 @@
       "assets/**/*"
     ],
     "win": {
-      "target": {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      },
+      "target": ["nsis", "zip"],
+      "arch": ["x64"],
       "icon": "assets/images/icon-512.png",
       "requestedExecutionLevel": "asInvoker",
       "verifyUpdateCodeSignature": false,
       "publisherName": "AudioVisual",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
-    "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "icon": "assets/images/icon-512.png",
-      "category": "public.app-category.entertainment"
-    },
     "linux": {
-      "target": [
-        {
-          "target": "deb",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
+      "target": ["deb", "AppImage"],
+      "arch": ["x64"],
       "icon": "assets/images/icon-512.png",
-      "category": "AudioVideo"
+      "category": "AudioVideo",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "compression": "maximum",
     "nsis": {

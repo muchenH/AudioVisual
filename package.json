@@ -38,8 +38,10 @@
       "assets/**/*"
     ],
     "win": {
-      "target": ["nsis", "zip"],
-      "arch": ["x64"],
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "zip", "arch": ["x64"] }
+      ],
       "icon": "assets/images/icon-512.png",
       "requestedExecutionLevel": "asInvoker",
       "verifyUpdateCodeSignature": false,
@@ -47,8 +49,10 @@
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "linux": {
-      "target": ["deb", "AppImage"],
-      "arch": ["x64"],
+      "target": [
+        { "target": "deb", "arch": ["x64"] },
+        { "target": "AppImage", "arch": ["x64"] }
+      ],
       "icon": "assets/images/icon-512.png",
       "category": "AudioVideo",
       "artifactName": "${productName}-${version}-${arch}.${ext}"

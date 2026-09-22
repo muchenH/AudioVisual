@@ -7,58 +7,101 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">🎬 AudioVisual <span class="tag">Web / Docker</span></div>
-      <div class="topbar-actions">
-        <label class="mode-switch">
-          <input type="checkbox" id="drama-mode-toggle" />
-          <span>影视导航模式</span>
-        </label>
-      </div>
-    </header>
+  <!-- 顶部浏览器风格工具栏 -->
+  <header class="topbar">
+    <div class="brand-block">
+      <span class="brand-logo">▶</span>
+      <span class="brand">AudioVisual</span>
+      <span class="tag web">Web / Docker</span>
+    </div>
 
-    <main class="main">
-      <!-- 解析模式 -->
-      <section id="parse-panel" class="panel">
-        <div class="controls">
-          <div class="field">
-            <label for="video-url">视频页面链接</label>
-            <input id="video-url" type="text" placeholder="例如 https://www.iqiyi.com/v_xxx.html" autocomplete="off" />
-          </div>
+    <div class="nav-btns">
+      <button id="back-btn" class="nav-btn" title="后退" disabled>←</button>
+      <button id="forward-btn" class="nav-btn" title="前进" disabled>→</button>
+      <button id="home-btn" class="nav-btn" title="首页">⌂</button>
+    </div>
 
-          <div class="field field-inline">
-            <label for="parser-select">解析接口</label>
-            <select id="parser-select"></select>
-          </div>
+    <!-- 地址栏 -->
+    <div class="address-wrap">
+      <input id="address-bar" type="text" placeholder="输入网址，例如 https://www.iqiyi.com" autocomplete="off" spellcheck="false" />
+      <button id="go-btn" class="btn primary small">前往</button>
+    </div>
 
-          <button id="parse-btn" class="btn primary">解析</button>
-          <button id="clear-btn" class="btn ghost">清空</button>
-        </div>
+    <!-- 快捷区 -->
+    <div class="quick-area" id="quick-area">
+      <select id="quick-platform" class="compact" title="切换平台" hidden></select>
+      <select id="quick-parser" class="compact" title="解析接口" hidden></select>
+      <button id="quick-parse" class="icon-btn" title="立即解析当前页" hidden>▶</button>
+      <select id="quick-drama" class="compact" title="影视导航" hidden></select>
+    </div>
 
-        <div id="result" class="result hidden">
-          <div class="result-row">
-            <span class="result-label">解析结果（嵌入 URL）</span>
-            <span id="page-tag" class="tag subtle"></span>
-          </div>
-          <code id="parse-url" class="result-url"></code>
-          <div class="copy-row">
-            <button id="copy-btn" class="btn small">复制链接</button>
-            <button id="open-btn" class="btn small primary">在新标签页打开</button>
-          </div>
-          <div class="iframe-wrap">
-            <iframe id="player-iframe" title="audioVisual player" allowfullscreen loading="lazy"></iframe>
-          </div>
-        </div>
-      </section>
+    <div class="mode-switch" title="切换 解析 / 美韩日剧 模式">
+      <span class="mode-label" id="mode-label">国内解析</span>
+      <label class="switch">
+        <input type="checkbox" id="mode-toggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
 
-      <!-- 影视导航模式 -->
-      <section id="drama-panel" class="panel hidden">
-        <p class="hint">美韩日剧模式：直接跳转影视导航站，无需解析。</p>
-        <div id="drama-grid" class="drama-grid"></div>
-      </section>
-    </main>
+    <button id="settings-btn" class="icon-btn gear" title="设置">⚙</button>
+  </header>
+
+  <!-- 主视区：默认显示首页，导航时隐藏 -->
+  <main id="main">
+    <section id="home" class="home">
+      <div class="home-title" id="home-title">选择平台开始观影</div>
+      <div id="platform-grid" class="card-grid"></div>
+      <div id="drama-grid" class="card-grid hidden"></div>
+    </section>
+
+    <!-- 应用内浏览 iframe（经 /proxy 加载） -->
+    <div id="view-host" class="view-host hidden">
+      <iframe id="view" title="AudioVisual 浏览" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe>
+    </div>
+  </main>
+
+  <!-- 播放浮层：自动解析后全屏播放 -->
+  <div id="player-overlay" class="player-overlay hidden">
+    <div class="player-bar">
+      <button id="player-back" class="btn ghost small">← 返回平台</button>
+      <span class="player-title" id="player-title">正在解析播放…</span>
+      <span class="player-actions">
+        <select id="player-parser" class="compact wide" title="切换解析接口"></select>
+        <button id="player-reparse" class="btn primary small" title="重新解析">重新解析</button>
+      </span>
+    </div>
+    <iframe id="player-frame" title="AudioVisual 播放器" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
   </div>
+
+  <!-- 设置弹窗 -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span class="modal-title">系统设置</span>
+        <button id="settings-close" class="btn ghost small">× 关闭</button>
+      </div>
+      <div class="modal-tabs">
+        <button class="tab active" data-tab="tab-parsers">解析接口</button>
+        <button class="tab" data-tab="tab-dramas">影视导航</button>
+      </div>
+      <div id="tab-parsers" class="tab-pane active">
+        <p class="hint">每行一个，格式：<code>名称|接口URL</code>。留空则使用默认列表。</p>
+        <textarea id="parsers-input" spellcheck="false" placeholder="虾米|https://jx.xmflv.com/?url="></textarea>
+      </div>
+      <div id="tab-dramas" class="tab-pane">
+        <p class="hint">每行一个，格式：<code>名称|网站地址</code>。留空则使用默认列表。</p>
+        <textarea id="dramas-input" spellcheck="false" placeholder="影巢movie|https://www.movie1080.xyz/"></textarea>
+      </div>
+      <div class="modal-foot">
+        <button id="settings-reset" class="btn ghost small">恢复默认</button>
+        <span class="flex-spacer"></span>
+        <button id="settings-save" class="btn primary small">应用并保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
 
   <script src="/app.js"></script>
 </body>

@@ -5,7 +5,8 @@ FROM node:20-alpine
 
 # 避免 Alpine 下 npm 的警告并固定时区
 ENV NODE_ENV=production \
-    PORT=3000
+    PORT=3000 \
+    AV_DATA_DIR=/app/data
 
 WORKDIR /app
 
@@ -16,6 +17,10 @@ RUN npm install --prefix /app/server --omit=dev
 # 复制服务端与前端静态资源
 COPY server ./server
 COPY public ./public
+
+# 设置持久化目录（compose 可挂载卷以长期保存自定义解析器/导航）。
+RUN mkdir -p /app/data
+VOLUME ["/app/data"]
 
 EXPOSE 3000
 

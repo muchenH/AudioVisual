@@ -82,6 +82,8 @@ typings/
 /userData
 # Build output
 /dist
+# Web 版运行时设置（服务端持久化，不入库）
+/data
 
 # Development configuration
 dev-app-update.yml

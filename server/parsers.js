@@ -39,12 +39,16 @@ const DEFAULT_DRAMA_SITES = [
   { value: 'https://www.ncat21.com/', label: '网飞猫' }
 ];
 
-/** 判断某 URL 是否为各平台的视频详情页（与原 main.js 逻辑保持一致） */
+/** 判断某 URL 是否为各平台的视频详情页（与主线 renderer.js/main.js 逻辑保持一致）。 */
 function isVideoPage(url) {
+  if (!url || typeof url !== 'string') return false;
   return (
     (url.includes('iqiyi.com/v_')) ||
     (url.includes('mgtv.com/b/')) ||
-    (url.includes('v.qq.com/x/cover/'))
+    (url.includes('v.qq.com/x/cover/')) ||
+    (url.includes('bilibili.com/bangumi/play/')) ||
+    ((url.includes('bilibili.com/video/')) && (url.includes('?p=') || url.includes('&p='))) ||
+    (url.includes('youku.com/v_show/'))
   );
 }
 
@@ -52,11 +56,11 @@ function isVideoPage(url) {
  * 核心：构造"解析/嵌入 URL"。
  * 与原版 renderer.js 的 `finalUrl = selectedApiUrl + currentVideoUrl` 完全一致。
  * @param {string} videoUrl - 原始视频页面 URL（如 iqiyi 视频页）。
- * @param {string} [api] - 解析器 value（带前缀）。省略时使用第一个默认解析器。
- * @param {string} [label] - 选中的解析器 label，仅用于返回信息。
+ * @param {string} [api] - 解析器 value（带前缀）。省略时使用列表中的第一个解析器。
+ * @param {Array} [apiList] - 可用的解析器列表（默认 DEFAULT_API_LIST，可传入服务端自定义列表）。
  * @returns {{ok:true, parseUrl:string, api:{label,value}, videoUrl:string}}
  */
-function buildParseUrl(videoUrl, api) {
+function buildParseUrl(videoUrl, api, apiList) {
   if (!videoUrl || typeof videoUrl !== 'string') {
     return { ok: false, error: '缺少 videoUrl 参数。' };
   }
@@ -65,7 +69,7 @@ function buildParseUrl(videoUrl, api) {
     normalized = 'https://' + normalized;
   }
 
-  const parser = resolveApi(api);
+  const parser = resolveApi(api, apiList);
   if (!parser.ok) {
     return { ok: false, error: parser.error, videoUrl: normalized };
   }
@@ -83,21 +87,24 @@ function buildParseUrl(videoUrl, api) {
  *  - 直接给 value（含前缀）→ 使用；
  *  - 给 label → 在列表中查找 value；
  *  - 给 {label,value} 对象 → 使用其 value；
- *  - 未提供 → 返回第一个默认解析器。
+ *  - 未提供 → 返回列表中的第一个解析器。
+ * @param {string|object} [api]
+ * @param {Array} [apiList] - 可用解析器列表，默认 DEFAULT_API_LIST。
  */
-function resolveApi(api) {
+function resolveApi(api, apiList) {
+  const list = Array.isArray(apiList) && apiList.length ? apiList : DEFAULT_API_LIST;
   let chosen = null;
 
   if (!api) {
-    chosen = DEFAULT_API_LIST[0];
+    chosen = list[0];
   } else if (typeof api === 'string') {
     // 先当作 value 精确匹配，再当作 label 匹配。
-    chosen = DEFAULT_API_LIST.find((p) => p.value === api) ||
-      DEFAULT_API_LIST.find((p) => p.label === api) ||
+    chosen = list.find((p) => p.value === api) ||
+      list.find((p) => p.label === api) ||
       // 用户可能直接输入了一个带前缀的完整解析地址。
       (isApiLike(api) ? { value: api, label: '自定义解析' } : null);
   } else if (typeof api === 'object' && api !== null) {
-    chosen = api.value || (api.label ? DEFAULT_API_LIST.find((p) => p.label === api.label) : null);
+    chosen = api.value || (api.label ? list.find((p) => p.label === api.label) : null);
   }
 
   if (!chosen) {

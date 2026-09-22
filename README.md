@@ -70,18 +70,23 @@
 
 ---
 
-## 🐳 Docker / Web 版（分支 `docker-audiovisual`）
+## 🐳 Docker / Web 版
 
-原版是 **Electron 桌面应用**：把"解析接口"拼接到原始视频页 URL 上，再注入 iframe 播放。
-`docker-audiovisual` 分支把同样的核心逻辑改造成 **Node.js + Express 的 HTTP 服务 + 浏览器前端**，
-无需安装桌面客户端即可使用。详见 [docker/README.md](docker/README.md)。
+原版是 **Electron 桌面应用**：内嵌浏览器视图浏览平台，进入视频页后自动把"解析接口 + 视频页 URL"
+注入为播放器。Docker / Web 版把同样的体验搬到浏览器里：后端提供 **反向代理网关**
+（剥掉 `X-Frame-Options` / CSP，注入探测脚本），前端做成 **浏览器风格界面**，
+实现 **应用内浏览平台 → 点开视频自动解析 → 浮层播放**，并支持后退/前进/首页、
+影视导航模式、服务端持久化的自定义解析接口与导航列表。
 
 ```bash
 # 构建并启动（访问 http://localhost:3000）
 docker compose up --build
 ```
 
-主要新增：`server/`（Express 后端与从 `renderer.js` 抽出的解析逻辑）、`public/`（网页界面）、`Dockerfile`、`docker-compose.yml`。
+主要新增：`server/`（Express 后端、`proxy.js` 反向代理、`parsers.js` 解析逻辑、`settings.js` 设置持久化）、
+`public/`（浏览器风格前端）、`Dockerfile`、`docker-compose.yml`。详见 [docker/README.md](docker/README.md)。
+
+> 端口可通过 `docker run -p 8080:3000 ...` 自定义；自定义解析接口/导航保存在 Docker 卷 `audiovisual-data` 中。
 
 ## 📖 使用指南
 

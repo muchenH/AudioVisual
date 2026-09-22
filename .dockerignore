@@ -3,6 +3,7 @@
 .gitignore
 node_modules/
 dist/
+data/
 *.md
 !docker/README.md
 !README.md

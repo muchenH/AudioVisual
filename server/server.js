@@ -42,6 +42,27 @@ function effectiveConfig() {
   };
 }
 
+// 代理转发时需要剥离的响应头（小写）。
+//  - 帧/CSP 类：会阻止页面被 iframe 嵌入；
+//  - location：已改写为代理地址；
+//  - content-encoding 等：上游响应体已由 fetch 自动解压，
+//    继续透传会让浏览器按 br/gzip 二次解码而失败。
+const HEADERS_SKIP_FORWARD = [
+  'x-frame-options',
+  'frame-options',
+  'content-security-policy',
+  'content-security-policy-report-only',
+  'x-content-security-policy',
+  'x-webkit-csp',
+  'location',
+  'content-encoding',
+  'content-length',
+  'content-md5',
+  'transfer-encoding',
+  'connection',
+  'keep-alive'
+];
+
 // --- 反向代理网关 ---
 // GET /proxy?url=<外部URL>  把外部网页以"可嵌入 / 应用内跳转"的形式返回。
 app.get('/proxy', async (req, res) => {
@@ -65,13 +86,14 @@ app.get('/proxy', async (req, res) => {
 
     headers.forEach((value, key) => {
       const lk = key.toLowerCase();
-      if (['x-frame-options', 'frame-options', 'content-security-policy',
-        'content-security-policy-report-only', 'x-content-security-policy',
-        'x-webkit-csp', 'location'].includes(lk)) {
-        return;
-      }
-      // 避免响应头重复设置导致错误。
-      if (lk === 'content-length' || lk === 'transfer-encoding' || lk === 'connection') return;
+      // 需要剥离的响应头：
+      //  1) 帧/内容安全策略：会阻止页面被 iframe 嵌入；
+      //  2) location：已在上面改写为代理地址，避免重复；
+      //  3) content-encoding / content-length / transfer-encoding / content-md5：
+      //     上游响应体已被 runtime 自动解压（fetch 会解 gzip/br/deflate），
+      //     我们回给浏览器的是"已解压后的文本"，若继续透传 content-encoding，
+      //     浏览器会再次按 br/gzip 解码而失败（表现为"网页可能暂时无法连接"）。
+      if (HEADERS_SKIP_FORWARD.includes(lk)) return;
       try { res.setHeader(key, value); } catch (e) { /* 忽略非法头 */ }
     });
 
@@ -80,8 +102,7 @@ app.get('/proxy', async (req, res) => {
       // 以重定向后的最终 URL 为基准改写相对链接。
       return res.send(proxifyDocument(body, finalUrl || targetUrl));
     }
-    // 非 HTML（图片/视频/其它）：直接透传 Buffer。fetch 已把 body 读成 text，
-    // 对二进制不准确；此处对明显非文本内容尽量用文本透传，实际主要服务 HTML 页面。
+    // 非 HTML：同样以已解压的文本/二进制透传（content-encoding 已剥离）。
     return res.send(body);
   } catch (err) {
     const msg = err && err.name === 'AbortError' ? '代理目标请求超时。' : '代理请求失败：' + (err && err.message ? err.message : String(err));

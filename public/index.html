@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AudioVisual · Web 版（Docker）</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">🎬 AudioVisual <span class="tag">Web / Docker</span></div>
+      <div class="topbar-actions">
+        <label class="mode-switch">
+          <input type="checkbox" id="drama-mode-toggle" />
+          <span>影视导航模式</span>
+        </label>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- 解析模式 -->
+      <section id="parse-panel" class="panel">
+        <div class="controls">
+          <div class="field">
+            <label for="video-url">视频页面链接</label>
+            <input id="video-url" type="text" placeholder="例如 https://www.iqiyi.com/v_xxx.html" autocomplete="off" />
+          </div>
+
+          <div class="field field-inline">
+            <label for="parser-select">解析接口</label>
+            <select id="parser-select"></select>
+          </div>
+
+          <button id="parse-btn" class="btn primary">解析</button>
+          <button id="clear-btn" class="btn ghost">清空</button>
+        </div>
+
+        <div id="result" class="result hidden">
+          <div class="result-row">
+            <span class="result-label">解析结果（嵌入 URL）</span>
+            <span id="page-tag" class="tag subtle"></span>
+          </div>
+          <code id="parse-url" class="result-url"></code>
+          <div class="copy-row">
+            <button id="copy-btn" class="btn small">复制链接</button>
+            <button id="open-btn" class="btn small primary">在新标签页打开</button>
+          </div>
+          <div class="iframe-wrap">
+            <iframe id="player-iframe" title="audioVisual player" allowfullscreen loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
+
+      <!-- 影视导航模式 -->
+      <section id="drama-panel" class="panel hidden">
+        <p class="hint">美韩日剧模式：直接跳转影视导航站，无需解析。</p>
+        <div id="drama-grid" class="drama-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

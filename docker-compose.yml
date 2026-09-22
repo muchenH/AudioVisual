@@ -1,0 +1,12 @@
+# AudioVisual Web 版（Docker）编排示例。
+services:
+  audiovisual-web:
+    build: .
+    image: audiovisual-web:latest
+    container_name: audiovisual-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
